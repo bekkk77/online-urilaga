@@ -57,8 +57,8 @@ export default function Home() {
           />
           <FeatureCard
             icon={<Share2 className="text-blue-400" size={24} />}
-            title="Хялбар Түгээлт"
-            desc="WhatsApp, Telegram, Messenger-ээр нэг товшилтоор хуваалцаарай."
+            title="Байгальд ээлтэй"
+            desc="Цаас ашиглахгүй, байгальд ээлтэй онлайн урилгын систем."
           />
         </div>
       </section>

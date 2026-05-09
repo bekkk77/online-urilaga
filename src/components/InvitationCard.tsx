@@ -4,14 +4,18 @@ import React from "react";
 import { Invitation } from "@/lib/types";
 import { themes } from "@/lib/themes";
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, Share2 } from "lucide-react";
+import { Calendar, Clock, MapPin } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 interface InvitationCardProps {
   invitation: Invitation;
+  showQR?: boolean;
 }
 
-export default function InvitationCard({ invitation }: InvitationCardProps) {
+export default function InvitationCard({
+  invitation,
+  showQR = false,
+}: InvitationCardProps) {
   const theme = themes[invitation.type] || themes.other;
 
   const containerVariants = {
@@ -30,22 +34,6 @@ export default function InvitationCard({ invitation }: InvitationCardProps) {
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: { opacity: 1, scale: 1 },
-  };
-
-  const shareInvitation = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: invitation.title,
-          text: `${invitation.host} tanaig ${invitation.title} urij baina!`,
-          url: window.location.href,
-        })
-        .catch(console.error);
-    } else {
-      // Fallback: Copy link
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link хуулагдлаа!");
-    }
   };
 
   return (
@@ -102,30 +90,25 @@ export default function InvitationCard({ invitation }: InvitationCardProps) {
           <p className="text-lg leading-relaxed">{invitation.description}</p>
         </motion.div>
 
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col items-center gap-6 pt-6"
-        >
-          <div className="bg-white p-4 rounded-2xl shadow-inner border-2 border-slate-100">
-            <QRCodeSVG
-              value={window.location.href}
-              size={150}
-              level="H"
-              includeMargin={true}
-            />
-            <p className="text-[10px] mt-2 opacity-50 text-slate-500 uppercase tracking-tighter">
-              Scan to share or check-in
-            </p>
-          </div>
-
-          <button
-            onClick={shareInvitation}
-            className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold shadow-lg transform transition-all active:scale-95 ${theme.button}`}
+        {/* QR Code section - visibility will be managed by parent */}
+        {showQR && (
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col items-center gap-6 pt-6"
           >
-            <Share2 size={20} />
-            Урилга түгээх (Share)
-          </button>
-        </motion.div>
+            <div className="bg-white p-4 rounded-2xl shadow-inner border-2 border-slate-100">
+              <QRCodeSVG
+                value={window.location.href}
+                size={150}
+                level="H"
+                includeMargin={true}
+              />
+              <p className="text-[10px] mt-2 opacity-50 text-slate-500 uppercase tracking-tighter">
+                Scan to check-in
+              </p>
+            </div>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

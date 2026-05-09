@@ -1,21 +1,23 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Invitation } from "@/lib/types";
-import { getInvitationById } from "@/lib/store";
+import React, { useEffect, useState, useMemo } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Invitation, Guest } from "@/lib/types";
+import { getInvitationById, getGuests } from "@/lib/store";
 import InvitationCard from "@/components/InvitationCard";
 import RSVPForm from "@/components/RSVPForm";
-import SendInviteModal from "@/components/SendInviteModal";
-import { Settings, ArrowLeft, Send } from "lucide-react";
+import { Settings, ArrowLeft } from "lucide-react";
 import { themes } from "@/lib/themes";
 
 export default function InvitationPage() {
   const { id } = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const guestId = searchParams.get("guest");
+
   const [invitation, setInvitation] = useState<Invitation | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [isComing, setIsComing] = useState(false);
 
   const showToast = (message: string) => {
     setToast(message);
@@ -26,11 +28,24 @@ export default function InvitationPage() {
     if (id) {
       const inv = getInvitationById(id as string);
       if (inv) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setInvitation(inv);
       }
+
+      if (guestId) {
+        const guests = getGuests(id as string);
+        const currentGuest = guests.find((g) => g.id === guestId);
+        if (currentGuest?.status === "going") {
+          setIsComing(true);
+        }
+      }
     }
-  }, [id]);
+  }, [id, guestId]);
+
+  const handleRSVPSubmitted = (status: Guest["status"]) => {
+    if (status === "going") {
+      setIsComing(true);
+    }
+  };
 
   if (!invitation) {
     return (
@@ -61,13 +76,6 @@ export default function InvitationPage() {
             >
               <ArrowLeft size={20} />
             </button>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-all"
-            >
-              <Send size={18} />
-              Урилга илгээх
-            </button>
           </div>
           <button
             onClick={() => router.push(`/invitation/${id}/admin`)}
@@ -84,16 +92,12 @@ export default function InvitationPage() {
           </div>
         ) : null}
 
-        <InvitationCard invitation={invitation} />
-        <SendInviteModal
-          invitation={invitation}
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSuccess={(count) =>
-            showToast(`${count} урилга амжилттай илгээгдлээ`)
-          }
+        <InvitationCard invitation={invitation} showQR={isComing} />
+        
+        <RSVPForm 
+          invitation={invitation} 
+          onSubmitted={handleRSVPSubmitted}
         />
-        <RSVPForm invitation={invitation} />
 
         <footer className="text-center pt-12 pb-6 opacity-30 text-xs tracking-widest uppercase">
           Online Invitation App &copy; 2026

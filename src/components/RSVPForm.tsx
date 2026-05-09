@@ -9,9 +9,10 @@ import confetti from "canvas-confetti";
 
 interface RSVPFormProps {
   invitation: Invitation;
+  onSubmitted?: (status: Guest["status"]) => void;
 }
 
-export default function RSVPForm({ invitation }: RSVPFormProps) {
+export default function RSVPForm({ invitation, onSubmitted }: RSVPFormProps) {
   const theme = themes[invitation.type] || themes.other;
   const [name, setName] = useState("");
   const [status, setStatus] = useState<Guest["status"] | null>(null);
@@ -31,6 +32,9 @@ export default function RSVPForm({ invitation }: RSVPFormProps) {
 
     saveGuest(guest);
     setSubmitted(true);
+    if (onSubmitted) {
+      onSubmitted(status);
+    }
 
     if (status === "going") {
       confetti({
